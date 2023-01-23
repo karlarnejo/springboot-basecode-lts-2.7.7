@@ -1,67 +1,51 @@
 package com.spring.lts.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.security.Principal;
-
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.security.core.Authentication;
-
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.spring.lts.model.UserrJwtModel;
 import com.spring.lts.service.TokenService;
-
-//import com.spring.lts.config.Token;
+import com.spring.lts.common.ApiResultAuth;
+import com.spring.lts.common.ApiResultRest;
+import com.spring.lts.common.UserDetailsModel;
+import com.spring.lts.dao.CrudRepositoryUserr;
+import com.spring.lts.model.AuthenticationModel;
 
 @RestController
 public class AuthController {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(AuthController.class);
-
-    private final TokenService tokenService;
-
-    public AuthController(TokenService tokenService) {
+	private final TokenService tokenService;
+	private final AuthenticationManager authenticationManager;
+	private final CrudRepositoryUserr crudRepositoryUserr;
+    
+    public AuthController(TokenService tokenService, AuthenticationManager authenticationManager, CrudRepositoryUserr crudRepositoryUserr) {
         this.tokenService = tokenService;
-    }
-
-    @PostMapping("/token")
-    public String token(Authentication authentication) {
-        LOG.debug("Token requested for user: '{}'", authentication.getName());
-        String token = tokenService.generateToken(authentication);
-        LOG.debug("Token granted: {}", token);
-        return token;
+        this.authenticationManager = authenticationManager;
+        this.crudRepositoryUserr = crudRepositoryUserr;
     }
     
-    @GetMapping
-    public String home(Principal principal) {
-        return "Hello, " + principal.getName();
+    @PostMapping("/authenticate")
+    public ApiResultAuth createAuthenticationToken(@RequestBody AuthenticationModel authenticationRequest) {
+    	authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword()));
+        
+    	final UserDetails userDetails = tokenService
+				.loadUserByUsername(authenticationRequest.getUsername());
+        
+        final String token = tokenService.generateToken(userDetails);
+        
+        UserDetailsModel userDetailsModel = new UserDetailsModel();
+		userDetailsModel.setUsername(userDetails.getUsername());
+        
+        return ApiResultAuth.createResponse(userDetailsModel, "CUSTOM_SUCCESS_STATUS", "Message to be added later", token);
     }
-	
-//    @GetMapping("/token")
-//    public Token getToken(JwtAuthenticationToken jwtToken) {
-//        return new Token(jwtToken.getToken(), jwtToken.getAuthorities());
-//    }
-//
-//    @GetMapping("/read")
-//    public String read() {
-//        return "Welcome to the internet, i'll be your guide";
-//    }
-//
-//    @GetMapping("/write")
-//    public String write() {
-//        return "I know kung fu!";
-//    }
-//
-//    @GetMapping("/user")
-//    public String user() {
-//        return "You can't judge me, i am justice itself";
-//    }
-//
-//    @GetMapping("/admin")
-//    public String admin() {
-//        return "All your base are belong to us";
-//    }
+
+    @PostMapping("/")
+	public ApiResultRest helloWorld(@RequestBody AuthenticationModel authenticationRequest) {
+    	UserrJwtModel response = new UserrJwtModel(crudRepositoryUserr.findByUsername(authenticationRequest.getUsername()));
+		return ApiResultRest.createResponse(response, "CUSTOM_SUCCESS_STATUS", "Message to be added later");
+	}
 }
