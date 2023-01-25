@@ -1,6 +1,6 @@
-INSERT INTO userr VALUES ('test@gmail.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6');
-INSERT INTO userr VALUES ('test2@gmail.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6');
-INSERT INTO userr VALUES ('test3@gmail.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6');
+INSERT INTO userr (username, password, isenabled, isnotlocked, isaccountnotexpired, ispasswordnotexpired) VALUES ('test@gmail.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', true, true, true, true);
+INSERT INTO userr (username, password, isenabled, isnotlocked, isaccountnotexpired, ispasswordnotexpired) VALUES ('test2@gmail.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', true, true, true, true);
+INSERT INTO userr (username, password, isenabled, isnotlocked, isaccountnotexpired, ispasswordnotexpired) VALUES ('test3@gmail.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', true, true, true, true);
 
 INSERT INTO role (rolename) VALUES ('USER');
 INSERT INTO role (rolename) VALUES ('ADMIN');
