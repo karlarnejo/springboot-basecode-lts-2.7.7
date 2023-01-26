@@ -7,12 +7,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.spring.lts.model.UserrJwtModel;
 import com.spring.lts.service.TokenService;
 import com.spring.lts.common.ApiResultAuth;
 import com.spring.lts.common.ApiResultRest;
 import com.spring.lts.common.UserDetailsModel;
-import com.spring.lts.dao.CrudRepositoryUserr;
 import com.spring.lts.model.AuthenticationModel;
 
 @RestController
@@ -20,16 +18,14 @@ public class AuthController {
 	
 	private final TokenService tokenService;
 	private final AuthenticationManager authenticationManager;
-	private final CrudRepositoryUserr crudRepositoryUserr;
     
-    public AuthController(TokenService tokenService, AuthenticationManager authenticationManager, CrudRepositoryUserr crudRepositoryUserr) {
+    public AuthController(TokenService tokenService, AuthenticationManager authenticationManager) {
         this.tokenService = tokenService;
         this.authenticationManager = authenticationManager;
-        this.crudRepositoryUserr = crudRepositoryUserr;
     }
     
     @PostMapping("/authenticate")
-    public ApiResultAuth createAuthenticationToken(@RequestBody AuthenticationModel authenticationRequest) {
+    public ApiResultAuth createAuthenticationToken(@RequestBody AuthenticationModel authenticationRequest) throws Exception {
     	authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword()));
         
     	final UserDetails userDetails = tokenService
@@ -45,7 +41,7 @@ public class AuthController {
 
     @PostMapping("/")
 	public ApiResultRest helloWorld(@RequestBody AuthenticationModel authenticationRequest) {
-    	UserrJwtModel response = new UserrJwtModel(crudRepositoryUserr.findByUsername(authenticationRequest.getUsername()));
-		return ApiResultRest.createResponse(response, "CUSTOM_SUCCESS_STATUS", "Message to be added later");
-	}
+
+    	return ApiResultRest.createResponse("String", "CUSTOM_SUCCESS_STATUS", "Message to be added later");
+    }
 }

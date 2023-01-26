@@ -65,7 +65,7 @@ public class SecurityConfig {
     }
     
     // Don't do this in prod. Not sure how to put exception for h2-console.
-    // requestMatchers doesn't seem to work.s
+    // requestMatchers doesn't seem to work.
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring().requestMatchers(new AntPathRequestMatcher("/h2-console/**"));
@@ -77,6 +77,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests( auth -> auth
+                        .requestMatchers("/").hasAnyAuthority("SCOPE_ADMIN", "SCOPE_canReadAdmin")
                         .requestMatchers("/authenticate").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .anyRequest().authenticated()
