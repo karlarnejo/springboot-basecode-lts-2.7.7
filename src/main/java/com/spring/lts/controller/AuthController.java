@@ -1,13 +1,12 @@
 package com.spring.lts.controller;
 
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.spring.lts.service.TokenService;
+import com.spring.lts.service.AuthenticationService;
+import com.spring.lts.service.UserDetailsCustomService;
 import com.spring.lts.common.ApiResultAuth;
 import com.spring.lts.common.ApiResultRest;
 import com.spring.lts.common.UserDetailsModel;
@@ -16,22 +15,22 @@ import com.spring.lts.model.AuthenticationModel;
 @RestController
 public class AuthController {
 	
-	private final TokenService tokenService;
-	private final AuthenticationManager authenticationManager;
-    
-    public AuthController(TokenService tokenService, AuthenticationManager authenticationManager) {
-        this.tokenService = tokenService;
-        this.authenticationManager = authenticationManager;
+	private final UserDetailsCustomService userDetailsCustomService;
+	private final AuthenticationService authenticationService;
+	  
+	public AuthController(UserDetailsCustomService userDetailsCustomService, AuthenticationService authenticationService) {
+        this.userDetailsCustomService = userDetailsCustomService;
+        this.authenticationService = authenticationService;
     }
     
     @PostMapping("/authenticate")
     public ApiResultAuth createAuthenticationToken(@RequestBody AuthenticationModel authenticationRequest) throws Exception {
-    	authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword()));
-        
-    	final UserDetails userDetails = tokenService
+    	authenticationService.authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
+    	
+    	final UserDetails userDetails = userDetailsCustomService
 				.loadUserByUsername(authenticationRequest.getUsername());
         
-        final String token = tokenService.generateToken(userDetails);
+        final String token = authenticationService.generateToken(userDetails);
         
         UserDetailsModel userDetailsModel = new UserDetailsModel();
 		userDetailsModel.setUsername(userDetails.getUsername());
