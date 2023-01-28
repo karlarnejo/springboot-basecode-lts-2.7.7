@@ -4,9 +4,13 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.stream.Collectors;
 
+import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,8 +18,17 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.spring.lts.exception.UserAccountDisabledException;
+import com.spring.lts.exception.UserAccountExpiredException;
+import com.spring.lts.exception.UserAccountLockedException;
+import com.spring.lts.exception.UserInvalidPasswordException;
+import com.spring.lts.exception.UserInvalidUsernameException;
+import com.spring.lts.exception.UserPasswordExpiredException;
 
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class AuthenticationServiceImpl implements AuthenticationService {
 
 	private final JwtEncoder encoder;
@@ -51,9 +64,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		try {
 			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 		} catch (DisabledException e) {
-			throw new Exception("USER_DISABLED", e);
+			throw new UserAccountDisabledException(e, username);
+		} catch (LockedException e) {
+			throw new UserAccountLockedException(e, username);
+		} catch (AccountExpiredException e) {
+			throw new UserAccountExpiredException(e, username);
+		} catch (CredentialsExpiredException e) {
+			throw new UserPasswordExpiredException(e, username);
+		} catch (InternalAuthenticationServiceException e) {
+			throw new UserInvalidUsernameException(e, username);
 		} catch (BadCredentialsException e) {
-			throw new Exception("INVALID_CREDENTIALS", e);
+			throw new UserInvalidPasswordException(e, username);
 		}
 	}
 }

@@ -28,6 +28,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import com.spring.lts.exception.PrivilegeException;
 
 @Configuration
 @EnableWebSecurity
@@ -73,17 +74,22 @@ public class SecurityConfig {
     
 	@Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests( auth -> auth
-                        .requestMatchers("/").hasAnyAuthority("SCOPE_ADMIN", "SCOPE_canReadAdmin")
-                        .requestMatchers("/authenticate").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
-                .build();
+        http
+    		.exceptionHandling()
+			.accessDeniedHandler(new PrivilegeException());
+        
+        http
+	        .cors(Customizer.withDefaults())
+	        .csrf(AbstractHttpConfigurer::disable)
+	        .authorizeHttpRequests( auth -> auth
+	                .requestMatchers("/").hasAnyAuthority("SCOPE_ADMIN", "SCOPE_canReadAdmin")
+	                .requestMatchers("/authenticate").permitAll()
+	                .requestMatchers("/h2-console/**").permitAll()
+	                .anyRequest().authenticated()
+	        )
+	        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+	        .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+        
+        return http.build();
     }
 }
